@@ -233,9 +233,33 @@ source .venv/bin/activate
 pip install kwant numpy scipy matplotlib mpi4py
 ```
 
-Na klastrze PLGrid środowisko jest aktywowane w skryptach `run_*.sh` przez
-`source $SCRATCH/BLG_calc/bin/activate` po załadowaniu odpowiednich
-modułów (`module load GCC/... OpenMPI/... Python/... MUMPS/...`).
+### Tworzenie środowiska `BLG_calc` na klastrze Helios
+
+Na klastrze PLGrid (Helios) środowisko wirtualne `$SCRATCH/BLG_calc` jest
+budowane raz, ręcznie, i potem tylko aktywowane w skryptach `run_*.sh` przez
+`source $SCRATCH/BLG_calc/bin/activate` po załadowaniu modułów
+(`module load GCC/... OpenMPI/... Python/... MUMPS/...`).
+
+Do zbudowania (lub odtworzenia) tego środowiska od zera służy skrypt
+[create_BLG_calc_env_helios.sh](create_BLG_calc_env_helios.sh). Trzeba go
+uruchomić na węźle obliczeniowym (node logowania ma za starą wersję GLIBC):
+
+```bash
+srun --pty --mem=8gb --time=1:0:0 bash
+bash create_BLG_calc_env_helios.sh
+```
+
+Skrypt:
+
+1. ładuje moduły `GCC/14.3.0`, `OpenMPI/5.0.8`, `Python/3.11.5`,
+   `MUMPS/5.8.1-metis` (w tej kolejności — samo `OpenMPI` potrafi po cichu
+   podmienić wersję Pythona),
+2. tworzy venv w `$SCRATCH/BLG_calc` i instaluje `numpy`, `scipy`,
+   `matplotlib`,
+3. instaluje `mpi4py` oraz buduje `kwant` i wrapper `mumps` ze źródeł
+   (`--no-binary`), żeby uniknąć niezgodności ABI numpy i podpiąć solver
+   MUMPS zamiast wolniejszego SciPy/SuperLU,
+4. na końcu testuje import i wypisuje, który solver Kwant jest aktywny.
 
 ## Konwencje w kodzie
 
